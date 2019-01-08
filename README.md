@@ -45,10 +45,15 @@ Note that if you use the admin plugin, a file with your configuration, and named
 With the Presentation Deckset Plugin enabled, add the following to the Presentation Plugin's configuration:
 
 ```yaml
-parser: 'presentation-deckset/API/Parser.php'
+parser: 'DecksetParser'
 ```
 
-This will replace the Presentation Plugin's Parser with the Deckset-compliant one that this Plugin enables.
+This will replace the Presentation Plugin's Parser with the Deckset-compliant one that this Plugin enables. This can also be done for a single Presentation using the Page's FrontMatter:
+
+```yaml
+presentation:
+  parser: 'DecksetParser'
+```
 
 ### Syntax restrictions
 
