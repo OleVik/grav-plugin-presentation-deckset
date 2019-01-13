@@ -57,7 +57,51 @@ presentation:
 
 ### Syntax restrictions
 
-The [Deckset Syntax](https://docs.deckset.com/English.lproj/Customization/02-custom-theming.html) for Customization Commands is emulated through the Parser, with some exceptions:
+The [Deckset Syntax](https://docs.deckset.com/English.lproj/) for Customization Commands is emulated through the Parser, with the following exceptions or quirks:
+
+#### Formatting
+
+##### Lists, Text Styles, Quotes, Links, Code Blocks, Tables, Controlling Line Breaks
+
+All of this is standard Markdown, with a few exceptions that require Markdown Extra enabled-
+
+##### Headings
+
+The `fit`-commands inlined in headings have no effect, use Textsizing instead-
+
+##### Formulas
+
+Use [MathJax](https://github.com/Sommerregen/grav-plugin-mathjax) or equivalent for parsing-
+
+##### Emojis
+
+Currently not supported.
+
+##### Footers and Slide Numbers
+
+Footers are optionally enabled via the main Plugin's options. Enable Slide Numbers in [Reveal.js](https://github.com/hakimel/reveal.js/#slide-number), using `slideNumber: true` through the main Plugin's options.
+
+##### Footnotes
+
+If Markdown Extra is enabled, these render at the _end_ of the presentation, with varying results.
+
+##### Auto-Scaling
+
+See [Fitting text to a slide](https://github.com/OleVik/grav-plugin-presentation#fitting-text-to-a-slide) in the main Plugin's options.
+
+#### Media
+
+##### Background Images
+
+All syntaxes are supported, except `left|right filtered` and `left|right fit`. Multiple background images are supported by pure CSS, constrained by the dimensions of images used.
+
+##### Inline Images
+
+Inlined images are supported, but not `inline fill`, `inline X%`, and Image Grids with `inline fill`.
+
+##### Videos
+
+
 
 - Table-commands are not emulated
 - Footnote-commands are not emulated

@@ -14,6 +14,7 @@
 
 namespace Grav\Plugin\PresentationPlugin\API;
 
+use Grav\Common\Grav;
 use Grav\Common\Utils;
 
 /**
@@ -32,24 +33,23 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Instantiate Parser API
      *
-     * @param Styles $styles Styles API
+     * @param Transport $transport Transport API
      */
-    public function __construct($styles)
+    public function __construct($transport)
     {
-        $this->styles = $styles;
+        $this->transport = $transport;
     }
 
     /**
      * Regular expressions
      */
-    const REGEX_IMG = "/(<img(?:(\s*(class)\s*=\s*\x22([^\x22]+)\x22*)+|[^>]+?)*>)/";
-    const REGEX_IMG_P = "/<p>\s*?(<a .*<img.*<\/a>|<img.*)?\s*<\/p>/";
-    const REGEX_IMG_TITLE = "/<img[^>]*?title[ ]*=[ ]*[\"](.*?)[\"][^>]*?>/";
-    const REGEX_IMG_WRAPPING_LINK = '/\[(?\'image\'\!.*)\]\((?\'url\'https?:\/\/.*)\)/';
-    const REGEX_FRAGMENT_SHORTCODE = '~\[fragment=*([a-zA-Z-]*)\](.*)\[\/fragment\]~im';
     const REGEX_SHORTCODES = '/\[\.(?<property>[a-zA-Z0-9_-]+)?:(?<value>.*)\]/mi';
     const REGEX_WORDS = '/[a-zA-Z0-9_\- ]*/m';
     const REGEX_BRACKET_VALUE = '/(?![a-zA-Z0-9_\- ])\((?<property>.*)\)/m';
+    const REGEX_IMG = '/<img\s*(?:src="(?<src>.*)")\s*(?:alt="(?<alt>.*)")\s*\/>/i';
+    const REGEX_IMGS = '/(?:<p>\s*?)?((<a .*<img.*<\/a>|<img.*\s*)*)(?:\s*<\/p>)?/mi';
+    const REGEX_IMG_PERCENTAGE = '/^(?:\w*\s*)(?<percentage>\d*%$)/mU';
+    const REGEX_VIDEO = '/(?:<video).*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/video>)/iUm';
 
     /**
      * Parse shortcodes
@@ -61,6 +61,21 @@ class DecksetParser extends Parser implements ParserInterface
      */
     public function interpretShortcodes(string $content, string $id)
     {
+        if (preg_match(self::REGEX_IMG, $content)) {
+            // Grav::instance()['debugger']->addMessage($content);
+            $processed = self::processImages($content);
+            Grav::instance()['debugger']->addMessage($processed);
+            if (!empty($processed['style'])) {
+                $css = self::collapseToCssString($processed['style']);
+                $this->transport->setStyle($id, "{\n$css\n}");
+            }
+            if (!empty($processed['data'])) {
+                foreach ($processed['data'] as $attribute => $value) {
+                    $this->transport->setDataAttribute($id, $attribute, $value);
+                }
+            }
+            $content = $processed['content'];
+        }
         $return = array();
         preg_match_all(
             self::REGEX_SHORTCODES,
@@ -76,40 +91,42 @@ class DecksetParser extends Parser implements ParserInterface
                 $content = str_replace($match[0], '', $content);
                 if ($property == 'text') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}");
+                    $this->transport->setStyle($id, "{\n$css\n}");
                 } elseif ($property == 'text-emphasis') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'i');
-                    $this->styles->setStyle($id, "{\n$css\n}", 'em');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'i');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'em');
                 } elseif ($property == 'text-strong') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'b');
-                    $this->styles->setStyle($id, "{\n$css\n}", 'strong');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'b');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'strong');
                 } elseif ($property == 'header') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'h1,h2,h3,h4,h5,h6');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'h1,h2,h3,h4,h5,h6');
                 } elseif ($property == 'header-emphasis') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'h1 i,h2 i,h3 i,h4 i,h5 i,h6 i');
-                    $this->styles->setStyle($id, "{\n$css\n}", 'h1 em,h2 em,h3 em,h4 em,h5 em,h6 em');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'h1 i,h2 i,h3 i,h4 i,h5 i,h6 i');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'h1 em,h2 em,h3 em,h4 em,h5 em,h6 em');
                 } elseif ($property == 'header-strong') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'h1 b,h2 b,h3 b,h4 b,h5 b,h6 b');
-                    $this->styles->setStyle($id, "{\n$css\n}", 'h1 strong,h2 strong,h3 strong,h4 strong,h5 strong,h6 strong');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'h1 b,h2 b,h3 b,h4 b,h5 b,h6 b');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'h1 strong,h2 strong,h3 strong,h4 strong,h5 strong,h6 strong');
                 } elseif ($property == 'footer-style') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'footer');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'footer');
                 } elseif ($property == 'background-color') {
-                    $this->styles->setStyle($id, "{\n$property:$value;\n}");
+                    $this->transport->setStyle($id, "{\n$property:$value;\n}");
                 } elseif ($property == 'list') {
                     $css = self::collapseToCssString(self::listShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'ul,ol');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'ul,ol');
                 } elseif ($property == 'code') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'code,pre');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'code,pre');
                 } elseif ($property == 'quote') {
                     $css = self::collapseToCssString(self::genericShortcode($value));
-                    $this->styles->setStyle($id, "{\n$css\n}", 'blockquote');
+                    $this->transport->setStyle($id, "{\n$css\n}", 'blockquote');
+                } elseif ($property == 'build-lists') {
+                    $content = self::buildListShortcode($content);
                 }
             }
         }
@@ -170,6 +187,84 @@ class DecksetParser extends Parser implements ParserInterface
                 preg_match(self::REGEX_BRACKET_VALUE, $piece, $matches);
                 $return['list-style-type'] = $matches['property'];
             }
+        }
+        return $return;
+    }
+
+    /**
+     * Parse Deckset build-list shortcode
+     *
+     * @param string $content Markdown content in Page
+     *
+     * @return array Processed contents and properties
+     */
+    public static function buildListShortcode(string $content)
+    {
+        $content = str_replace('<li>', '<li class="fragment">', $content);
+        return $content;
+    }
+
+    /**
+     * Parse Deckset build-list shortcode
+     *
+     * @param string $content Markdown content in Page
+     *
+     * @return array Processed contents and properties
+     */
+    public static function processImages(string $content)
+    {
+        preg_match_all(self::REGEX_IMG, $content, $images, PREG_SET_ORDER, 0);
+        $return = array();
+        $return['content'] = $content;
+        $count = count($images);
+        if ($count == 1) {
+            if ($images[0]['alt'] == '') {
+                $return['data'] = [
+                    'background-image' => $images[0]['src']
+                ];
+            } elseif ($images[0]['alt'] == 'fit') {
+                $return['data'] = [
+                    'background-image' => $images[0]['src'],
+                    'background-size' => 'contain'
+                ];
+            } elseif (preg_match(self::REGEX_IMG_PERCENTAGE, $images[0]['alt'])) {
+                preg_match_all(self::REGEX_IMG_PERCENTAGE, $images[0]['alt'], $alt, PREG_SET_ORDER, 0);
+                $return['style'] = [
+                    'background-image' => 'url(' . $images[0]['src'] . ')',
+                    'background-size' => $alt[0]['percentage'],
+                    'background-repeat' => 'no-repeat',
+                    'background-position' => 'center',
+                ];
+            } elseif ($images[0]['alt'] == 'left') {
+                $return['style'] = [
+                    'background-image' => 'url(' . $images[0]['src'] . ')',
+                    'background-size' => '50%',
+                    'background-repeat' => 'no-repeat',
+                    'background-position' => 'center left',
+                    'padding-left' => '50% !important'
+                ];
+            }
+        } elseif ($count == 2) {
+            $return['style'] = [
+                'background-image' => 'url(' . $images[0]['src'] . '), url(' . $images[1]['src'] . ')',
+                'background-repeat' => 'no-repeat',
+                'background-position' => 'left, right',
+                'background-size' => '50% auto, 50% auto'
+            ];
+        } elseif ($count >= 3) {
+            $return['style'] = [
+                'background-image' => 'url(' . $images[0]['src'] . '), url(' . $images[1]['src'] . '), url(' . $images[2]['src'] . ')',
+                'background-repeat' => 'no-repeat',
+                'background-position' => 'left, center, right',
+                'background-size' => '33% auto, 33% auto, 33% auto'
+            ];
+        }
+        if ($images[0]['alt'] != 'inline') {
+            $return['content'] = preg_replace(self::REGEX_IMGS, '', $content);
+        }
+        if (preg_match(self::REGEX_WORDS, $return['content']) && !Utils::contains($images[0]['alt'], 'original')) {
+            $return['style']['background-color'] = '#3055a5';
+            $return['style']['background-blend-mode'] = 'screen';
         }
         return $return;
     }
