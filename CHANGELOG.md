@@ -1,5 +1,5 @@
 # v1.1.0-beta.1
-##  XX-XX-2019
+##  14-01-2019
 
 1. [](#improved)
     * README

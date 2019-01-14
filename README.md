@@ -57,21 +57,21 @@ presentation:
 
 ### Syntax restrictions
 
-The [Deckset Syntax](https://docs.deckset.com/English.lproj/) for Customization Commands is emulated through the Parser, with the following exceptions or quirks:
+The [Deckset Syntax](https://docs.deckset.com/English.lproj/) for Customization Commands is emulated through the DecksetParser, with the following exceptions or quirks:
 
 #### Formatting
 
 ##### Lists, Text Styles, Quotes, Links, Code Blocks, Tables, Controlling Line Breaks
 
-All of this is standard Markdown, with a few exceptions that require Markdown Extra enabled-
+All of this is standard Markdown, with a few exceptions that require Markdown Extra enabled.
 
 ##### Headings
 
-The `fit`-commands inlined in headings have no effect, use Textsizing instead-
+The `fit`-commands inlined in headings have no effect, use Textsizing instead.
 
 ##### Formulas
 
-Use [MathJax](https://github.com/Sommerregen/grav-plugin-mathjax) or equivalent for parsing-
+Use [MathJax](https://github.com/Sommerregen/grav-plugin-mathjax) or equivalent for parsing.
 
 ##### Emojis
 
@@ -101,10 +101,16 @@ Inlined images are supported, but not `inline fill`, `inline X%`, and Image Grid
 
 ##### Videos
 
+Background- and inline are supported, but not `left|right`. `autoplay`, `mute`, and `loop` are supported. For non-native video, like YouTube, use plugins like the [YouTube](https://github.com/getgrav/grav-plugin-youtube)-plugin, embed directly with HTML.
 
+##### Audio
 
-- Table-commands are not emulated
-- Footnote-commands are not emulated
-- Formula-commands are not emulated
+Automatically inlined, but no layout control. `autoplay`, `mute`, and `loop` are supported. For non-native audio, like SoundCloud, use a plugin or embed directly with HTML. Audio-download is disabled.
 
-Their effects are largely suppressed because of themes provided by Reveal.js, and they can more easily enhanced by other plugins. If there are other inadequacies, this is likely due to the lack of documentation provided by Deckset or lack of an equivalent HTML-element. If you find any areas for improvement, feel free to create a Pull Request.
+## Contributing
+
+If there are other inadequacies, this is likely due to the lack of documentation provided by Deckset. If you find any areas for improvement, feel free to create a Pull Request.
+
+### PHP Code Standards
+
+This plugin follows PSR-1, PSR-2, and PEAR coding standards (use CodeSniffer), as well as PSR-4.

@@ -50,6 +50,7 @@ class DecksetParser extends Parser implements ParserInterface
     const REGEX_IMGS = '/(?:<p>\s*?)?((<a .*<img.*<\/a>|<img.*\s*)*)(?:\s*<\/p>)?/mi';
     const REGEX_IMG_PERCENTAGE = '/^(?:\w*\s*)(?<percentage>\d*%$)/mU';
     const REGEX_VIDEO = '/(?:<video).*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/video>)/iUm';
+    const REGEX_AUDIO = '/(?:<audio).*(?<controls>controls.*)\s*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/audio>)/i';
 
     /**
      * Parse shortcodes
@@ -57,14 +58,12 @@ class DecksetParser extends Parser implements ParserInterface
      * @param string $content Markdown content in Page
      * @param string $id      Slide id-attribute
      *
-     * @return array Processed contents and properties
+     * @return array Processed content and properties
      */
     public function interpretShortcodes(string $content, string $id)
     {
         if (preg_match(self::REGEX_IMG, $content)) {
-            // Grav::instance()['debugger']->addMessage($content);
             $processed = self::processImages($content);
-            Grav::instance()['debugger']->addMessage($processed);
             if (!empty($processed['style'])) {
                 $css = self::collapseToCssString($processed['style']);
                 $this->transport->setStyle($id, "{\n$css\n}");
@@ -74,6 +73,23 @@ class DecksetParser extends Parser implements ParserInterface
                     $this->transport->setDataAttribute($id, $attribute, $value);
                 }
             }
+            $content = $processed['content'];
+        }
+        if (preg_match(self::REGEX_VIDEO, $content)) {
+            $processed = self::processVideos($content);
+            if (!empty($processed['style'])) {
+                $css = self::collapseToCssString($processed['style']);
+                $this->transport->setStyle($id, "{\n$css\n}");
+            }
+            if (!empty($processed['data'])) {
+                foreach ($processed['data'] as $attribute => $value) {
+                    $this->transport->setDataAttribute($id, $attribute, $value);
+                }
+            }
+            $content = $processed['content'];
+        }
+        if (preg_match(self::REGEX_AUDIO, $content)) {
+            $processed = self::processAudio($content);
             $content = $processed['content'];
         }
         $return = array();
@@ -138,7 +154,7 @@ class DecksetParser extends Parser implements ParserInterface
      *
      * @param string $content Markdown content in Page
      *
-     * @return array Processed contents and properties
+     * @return array Processed content and properties
      */
     public static function genericShortcode(string $content)
     {
@@ -170,7 +186,7 @@ class DecksetParser extends Parser implements ParserInterface
      *
      * @param string $content Markdown content in Page
      *
-     * @return array Processed contents and properties
+     * @return array Processed content and properties
      */
     public static function listShortcode(string $content)
     {
@@ -196,7 +212,7 @@ class DecksetParser extends Parser implements ParserInterface
      *
      * @param string $content Markdown content in Page
      *
-     * @return array Processed contents and properties
+     * @return array Processed content and properties
      */
     public static function buildListShortcode(string $content)
     {
@@ -205,11 +221,11 @@ class DecksetParser extends Parser implements ParserInterface
     }
 
     /**
-     * Parse Deckset build-list shortcode
+     * Parse Deckset Media Background and Inline Images
      *
      * @param string $content Markdown content in Page
      *
-     * @return array Processed contents and properties
+     * @return array Processed content and properties
      */
     public static function processImages(string $content)
     {
@@ -243,6 +259,14 @@ class DecksetParser extends Parser implements ParserInterface
                     'background-position' => 'center left',
                     'padding-left' => '50% !important'
                 ];
+            } elseif ($images[0]['alt'] == 'right') {
+                $return['style'] = [
+                    'background-image' => 'url(' . $images[0]['src'] . ')',
+                    'background-size' => '50%',
+                    'background-repeat' => 'no-repeat',
+                    'background-position' => 'center right',
+                    'padding-right' => '50% !important'
+                ];
             }
         } elseif ($count == 2) {
             $return['style'] = [
@@ -260,11 +284,67 @@ class DecksetParser extends Parser implements ParserInterface
             ];
         }
         if ($images[0]['alt'] != 'inline') {
-            $return['content'] = preg_replace(self::REGEX_IMGS, '', $content);
+            $return['content'] = preg_replace(self::REGEX_IMGS, '', $return['content']);
         }
         if (preg_match(self::REGEX_WORDS, $return['content']) && !Utils::contains($images[0]['alt'], 'original')) {
-            $return['style']['background-color'] = '#3055a5';
+            $return['style']['background-color'] = 'rgba(48, 85, 165, 0.5)';
             $return['style']['background-blend-mode'] = 'screen';
+        }
+        return $return;
+    }
+
+    /**
+     * Parse Deckset Media Video
+     *
+     * @param string $content Markdown content in Page
+     *
+     * @return array Processed content and properties
+     */
+    public static function processVideos(string $content)
+    {
+        preg_match_all(self::REGEX_VIDEO, $content, $videos, PREG_SET_ORDER, 0);
+        $return = array();
+        $return['content'] = $content;
+        $count = count($videos);
+        if ($count == 1) {
+            if ($videos[0]['alt'] == '') {
+                $return['data'] = [
+                    'background-video' => $videos[0]['src'],
+                    'background-size' => 'contain'
+                ];
+            }
+        }
+        if ($videos[0]['alt'] != 'inline') {
+            $return['content'] = preg_replace(self::REGEX_VIDEO, '', $return['content']);
+        }
+        return $return;
+    }
+
+    /**
+     * Parse Deckset Media Audio
+     *
+     * @param string $content Markdown content in Page
+     *
+     * @return array Processed content and properties
+     */
+    public static function processAudio(string $content)
+    {
+        preg_match_all(self::REGEX_AUDIO, $content, $audios, PREG_SET_ORDER, 0);
+        $return = array();
+        $return['content'] = $content;
+        foreach ($audios as $audio) {
+            $tag = $audio[0];
+            if (Utils::contains($audio['alt'], 'autoplay')) {
+                $tag = str_replace($audio['controls'], $audio['controls'] . ' autoplay ', $tag);
+            }
+            if (Utils::contains($audio['alt'], 'loop')) {
+                $tag = str_replace($audio['controls'], $audio['controls'] . ' loop ', $tag);
+            }
+            if (Utils::contains($audio['alt'], 'muted')) {
+                $tag = str_replace($audio['controls'], $audio['controls'] . ' muted ', $tag);
+            }
+            $tag = str_replace($audio['controls'], $audio['controls'] . '  controlsList="nodownload"', $tag);
+            $return['content'] = str_replace($audio[0], $tag, $return['content']);
         }
         return $return;
     }
