@@ -44,7 +44,7 @@ class DecksetParser extends Parser implements ParserInterface
      * Regular expressions
      */
     const REGEX_SHORTCODES = '/\[\.(?<property>[a-zA-Z0-9_-]+)?:(?<value>.*)\]/mi';
-    const REGEX_WORDS = '/[a-zA-Z0-9_\- ]*/m';
+    const REGEX_WORDS = '/[a-zA-Z0-9_\- ]+/m';
     const REGEX_BRACKET_VALUE = '/(?![a-zA-Z0-9_\- ])\((?<property>.*)\)/m';
     const REGEX_IMG = '/<img\s*(?:src="(?<src>.*)")\s*(?:alt="(?<alt>.*)")\s*\/>/i';
     const REGEX_IMGS = '/(?:<p>\s*?)?((<a .*<img.*<\/a>|<img.*\s*)*)(?:\s*<\/p>)?/mi';
