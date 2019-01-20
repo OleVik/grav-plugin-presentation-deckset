@@ -114,3 +114,7 @@ If there are other inadequacies, this is likely due to the lack of documentation
 ### PHP Code Standards
 
 This plugin follows PSR-1, PSR-2, and PEAR coding standards (use CodeSniffer), as well as PSR-4.
+
+## Sponsored by
+
+This Plugin was developed by Ole Vik with the sponsorship of [Hibbitts Design](https://www.hibbittsdesign.org).
