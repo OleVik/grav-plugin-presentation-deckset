@@ -31,7 +31,7 @@ use RocketTheme\Toolbox\Event\Event;
 class PresentationDecksetPlugin extends Plugin
 {
     /**
-     * Register intial event
+     * Register initial event
      *
      * @return array
      */

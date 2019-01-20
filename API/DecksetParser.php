@@ -44,9 +44,9 @@ class DecksetParser extends Parser implements ParserInterface
      * Regular expressions
      */
     const REGEX_SHORTCODES = '/\[\.(?<property>[a-zA-Z0-9_-]+)?:(?<value>.*)\]/mi';
-    const REGEX_WORDS = '/[a-zA-Z0-9_\- ]+/m';
+    const REGEX_WORDS = '/^[a-zA-Z0-9_\- ]+/im';
     const REGEX_BRACKET_VALUE = '/(?![a-zA-Z0-9_\- ])\((?<property>.*)\)/m';
-    const REGEX_IMG = '/<img\s*(?:src="(?<src>.*)")\s*(?:alt="(?<alt>.*)")\s*\/>/i';
+    const REGEX_IMG = '/<img\s*(?:alt="(?<alt>.*)")\s*(?:src="(?<src>.*)")\s*(?:>|\/>)/iU';
     const REGEX_IMGS = '/(?:<p>\s*?)?((<a .*<img.*<\/a>|<img.*\s*)*)(?:\s*<\/p>)?/mi';
     const REGEX_IMG_PERCENTAGE = '/^(?:\w*\s*)(?<percentage>\d*%$)/mU';
     const REGEX_VIDEO = '/(?:<video).*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/video>)/iUm';
@@ -131,7 +131,11 @@ class DecksetParser extends Parser implements ParserInterface
                     $css = self::collapseToCssString(self::genericShortcode($value));
                     $this->transport->setStyle($id, "{\n$css\n}", 'footer');
                 } elseif ($property == 'background-color') {
-                    $this->transport->setStyle($id, "{\n$property:$value;\n}");
+                    if ($this->transport->getDataAttribute($id, 'background-image') || $this->transport->getDataAttribute($id, 'background-video')) {
+                        $this->transport->setDataAttribute($id, 'background-color', $value);
+                    } else {
+                        $this->transport->setStyle($id, "{\n$property:$value;\n}");
+                    }
                 } elseif ($property == 'list') {
                     $css = self::collapseToCssString(self::listShortcode($value));
                     $this->transport->setStyle($id, "{\n$css\n}", 'ul,ol');

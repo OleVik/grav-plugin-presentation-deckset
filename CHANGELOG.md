@@ -1,8 +1,10 @@
 # v1.1.1
-##  XX-XX-2019
+##  20-01-2019
 
 1. [](#bugfix)
     * REGEX_WORDS
+    * REGEX_IMG
+    * Background Media handling
 
 # v1.1.0
 ##  14-01-2019
