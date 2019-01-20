@@ -46,7 +46,7 @@ class DecksetParser extends Parser implements ParserInterface
     const REGEX_SHORTCODES = '/\[\.(?<property>[a-zA-Z0-9_-]+)?:(?<value>.*)\]/mi';
     const REGEX_WORDS = '/^[a-zA-Z0-9_\- ]+/im';
     const REGEX_BRACKET_VALUE = '/(?![a-zA-Z0-9_\- ])\((?<property>.*)\)/m';
-    const REGEX_IMG = '/<img\s*(?:alt="(?<alt>.*)")\s*(?:src="(?<src>.*)")\s*(?:>|\/>)/iU';
+    const REGEX_IMG = '/<img\s*(?:class\s*\=\s*[\'\"](?<class>.*?)[\'\"].*?\s*|src\s*\=\s*[\'\"](?<src>.*?)[\'\"].*?\s*|alt\s*\=\s*[\'\"](?<alt>.*?)[\'\"].*?\s*|width\s*\=\s*[\'\"](?<width>.*?)[\'\"].*?\s*|height\s*\=\s*[\'\"](?<height>.*?)[\'\"].*?\s*)+.*?>/im';
     const REGEX_IMGS = '/(?:<p>\s*?)?((<a .*<img.*<\/a>|<img.*\s*)*)(?:\s*<\/p>)?/mi';
     const REGEX_IMG_PERCENTAGE = '/^(?:\w*\s*)(?<percentage>\d*%$)/mU';
     const REGEX_VIDEO = '/(?:<video).*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/video>)/iUm';
