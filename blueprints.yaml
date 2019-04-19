@@ -1,5 +1,5 @@
 name: Presentation Deckset
-version: 1.1.4
+version: 1.2.0
 description: Use Deckset Syntax with the Presentation-plugin
 icon: plug
 author:
@@ -13,7 +13,7 @@ license: MIT
 dependencies:
   - { name: grav, version: ">=1.6" }
   - { name: admin, version: ">=1.9" }
-  - { name: presentation, version: ">=1.1" }
+  - { name: presentation, version: ">=1.6.5" }
 
 form:
   validation: strict

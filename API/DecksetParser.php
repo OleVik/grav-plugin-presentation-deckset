@@ -1,6 +1,6 @@
 <?php
 /**
- * Presentation Plugin, Parser API
+ * Presentation Plugin, Deckset Parser API
  *
  * PHP version 7
  *
@@ -18,9 +18,9 @@ use Grav\Common\Grav;
 use Grav\Common\Utils;
 
 /**
- * Parser API
+ * Deckset Parser API
  *
- * Parser API for parsing content
+ * Deckset Parser API for parsing content
  *
  * @category Extensions
  * @package  Grav\Plugin\PresentationPlugin\API
@@ -33,10 +33,12 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Instantiate Parser API
      *
+     * @param array     $config    Plugin configuration
      * @param Transport $transport Transport API
      */
-    public function __construct($transport)
+    public function __construct($config, $transport)
     {
+        $this->config = $config;
         $this->transport = $transport;
     }
 
@@ -62,6 +64,14 @@ class DecksetParser extends Parser implements ParserInterface
      */
     public function interpretShortcodes(string $content, string $id)
     {
+        $return = array();
+        $base = parent::interpretShortcodes($content, $id);
+        if (!empty($base['content'])) {
+            $content = $base['content'];
+        }
+        if (is_array($base['props'])) {
+            $return = $base['props'];
+        }
         if (preg_match(self::REGEX_IMG, $content)) {
             $processed = self::processImages($content);
             if (!empty($processed['style'])) {
@@ -97,7 +107,6 @@ class DecksetParser extends Parser implements ParserInterface
             $processed = self::processAudio($content);
             $content = $processed['content'];
         }
-        $return = array();
         preg_match_all(
             self::REGEX_SHORTCODES,
             $content,
@@ -243,39 +252,31 @@ class DecksetParser extends Parser implements ParserInterface
         $return['content'] = $content;
         $count = count($images);
         if ($count == 1) {
+            $return['style'] = $return['data'] = [
+                'background-repeat' => 'no-repeat',
+                'background-position' => 'center',
+                'background-size' => 'contain'
+            ];
             if ($images[0]['alt'] == '') {
-                $return['data'] = [
-                    'background-image' => $images[0]['src']
-                ];
-            } elseif ($images[0]['alt'] == 'fit') {
-                $return['data'] = [
-                    'background-image' => $images[0]['src'],
-                    'background-size' => 'contain'
-                ];
+                $return['data']['background-image'] = $images[0]['src'];
+            } elseif ($images[0]['alt'] == 'fit' || $images[0]['alt'] == 'original') {
+                $return['data']['background-image'] = $images[0]['src'];
             } elseif (preg_match(self::REGEX_IMG_PERCENTAGE, $images[0]['alt'])) {
                 preg_match_all(self::REGEX_IMG_PERCENTAGE, $images[0]['alt'], $alt, PREG_SET_ORDER, 0);
-                $return['style'] = [
-                    'background-image' => 'url(' . $images[0]['src'] . ')',
-                    'background-size' => $alt[0]['percentage'],
-                    'background-repeat' => 'no-repeat',
-                    'background-position' => 'center',
-                ];
+                $return['style']['background-image'] = 'url(' . $images[0]['src'] . ')';
+                $return['style']['background-size'] = $alt[0]['percentage'];
             } elseif ($images[0]['alt'] == 'left') {
                 $return['style'] = [
                     'background-image' => 'url(' . $images[0]['src'] . ')',
                     'background-size' => '50%',
-                    'background-repeat' => 'no-repeat',
                     'background-position' => 'center left',
                     'padding-left' => '50% !important'
                 ];
             } elseif ($images[0]['alt'] == 'right') {
-                $return['style'] = [
-                    'background-image' => 'url(' . $images[0]['src'] . ')',
-                    'background-size' => '50%',
-                    'background-repeat' => 'no-repeat',
-                    'background-position' => 'center right',
-                    'padding-right' => '50% !important'
-                ];
+                $return['style']['background-image'] = 'url(' . $images[0]['src'] . ')';
+                $return['style']['background-size'] = '50%';
+                $return['style']['background-position'] = 'center right';
+                $return['style']['padding-right'] = '50% !important';
             }
             if (!empty($images[0]['title'])) {
                 $return['aria'] = [
@@ -284,19 +285,13 @@ class DecksetParser extends Parser implements ParserInterface
                 ];
             }
         } elseif ($count == 2) {
-            $return['style'] = [
-                'background-image' => 'url(' . $images[0]['src'] . '), url(' . $images[1]['src'] . ')',
-                'background-repeat' => 'no-repeat',
-                'background-position' => 'left, right',
-                'background-size' => '50% auto, 50% auto'
-            ];
+            $return['style']['background-image'] = 'url(' . $images[0]['src'] . '), url(' . $images[1]['src'] . ')';
+            $return['style']['background-position'] = 'left, right';
+            $return['style']['background-size'] = '50% auto, 50% auto';
         } elseif ($count >= 3) {
-            $return['style'] = [
-                'background-image' => 'url(' . $images[0]['src'] . '), url(' . $images[1]['src'] . '), url(' . $images[2]['src'] . ')',
-                'background-repeat' => 'no-repeat',
-                'background-position' => 'left, center, right',
-                'background-size' => '33% auto, 33% auto, 33% auto'
-            ];
+            $return['style']['background-image'] = 'url(' . $images[0]['src'] . '), url(' . $images[1]['src'] . '), url(' . $images[2]['src'] . ')';
+            $return['style']['background-position'] = 'left, center, right';
+            $return['style']['background-size'] = '33% auto, 33% auto, 33% auto';
         }
         if ($images[0]['alt'] != 'inline') {
             $return['content'] = preg_replace(self::REGEX_IMGS, '', $return['content']);

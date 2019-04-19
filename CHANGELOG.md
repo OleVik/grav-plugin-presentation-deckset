@@ -1,3 +1,10 @@
+# v1.2.0
+## 19-04-2019
+
+1. [](#improved)
+   - Image parsing
+   - Image backgrounds are now all contained within slide
+
 # v1.1.4
 ## 23-02-2019
 
