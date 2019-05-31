@@ -40,6 +40,7 @@ class DecksetParser extends Parser implements ParserInterface
     {
         $this->config = $config;
         $this->transport = $transport;
+        $this->props = [];
     }
 
     /**
