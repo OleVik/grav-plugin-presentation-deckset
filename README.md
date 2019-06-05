@@ -107,6 +107,12 @@ Background- and inline are supported, but not `left|right`. `autoplay`, `mute`, 
 
 Automatically inlined, but no layout control. `autoplay`, `mute`, and `loop` are supported. For non-native audio, like SoundCloud, use a plugin or embed directly with HTML. Audio-download is disabled.
 
+#### Presenting
+
+##### Notes
+
+Deckset's notes, using the `^ This is my note.`-syntax, is supported. This syntax is rather simple and quite limited, so if you want to use Markdown in your notes, use the [main plugin's syntax](https://github.com/OleVik/grav-plugin-presentation#notes) instead.
+
 ## Contributing
 
 If there are other inadequacies, this is likely due to the lack of documentation provided by Deckset. If you find any areas for improvement, feel free to create a Pull Request.

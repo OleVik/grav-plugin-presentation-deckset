@@ -54,11 +54,12 @@ class DecksetParser extends Parser implements ParserInterface
     const REGEX_IMG_PERCENTAGE = '/^(?:\w*\s*)(?<percentage>\d*%$)/mU';
     const REGEX_VIDEO = '/(?:<video).*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/video>)/iUm';
     const REGEX_AUDIO = '/(?:<audio).*(?<controls>controls.*)\s*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/audio>)/i';
+    const REGEX_NOTES = '/\^.*/m';
 
     /**
      * Parse shortcodes
      *
-     * @param string $content Markdown content in Page
+     * @param string $content Content in Page
      * @param string $id      Slide id-attribute
      *
      * @return array Processed content and properties
@@ -72,6 +73,9 @@ class DecksetParser extends Parser implements ParserInterface
         }
         if (is_array($base['props'])) {
             $return = $base['props'];
+        }
+        if (preg_match(self::REGEX_NOTES, $content)) {
+            $content = self::processNotes($content);
         }
         if (preg_match(self::REGEX_IMG, $content)) {
             $processed = self::processImages($content);
@@ -171,7 +175,7 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Parse Deckset generic shortcodes
      *
-     * @param string $content Markdown content in Page
+     * @param string $content Content in Page
      *
      * @return array Processed content and properties
      */
@@ -203,7 +207,7 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Parse Deckset list shortcodes
      *
-     * @param string $content Markdown content in Page
+     * @param string $content Content in Page
      *
      * @return array Processed content and properties
      */
@@ -229,7 +233,7 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Parse Deckset build-list shortcode
      *
-     * @param string $content Markdown content in Page
+     * @param string $content Content in Page
      *
      * @return array Processed content and properties
      */
@@ -242,7 +246,7 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Parse Deckset Media Background and Inline Images
      *
-     * @param string $content Markdown content in Page
+     * @param string $content Content in Page
      *
      * @return array Processed content and properties
      */
@@ -307,7 +311,7 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Parse Deckset Media Video
      *
-     * @param string $content Markdown content in Page
+     * @param string $content Content in Page
      *
      * @return array Processed content and properties
      */
@@ -334,7 +338,7 @@ class DecksetParser extends Parser implements ParserInterface
     /**
      * Parse Deckset Media Audio
      *
-     * @param string $content Markdown content in Page
+     * @param string $content Content in Page
      *
      * @return array Processed content and properties
      */
@@ -358,6 +362,25 @@ class DecksetParser extends Parser implements ParserInterface
             $return['content'] = str_replace($audio[0], $tag, $return['content']);
         }
         return $return;
+    }
+
+    /**
+     * Parse Deckset Presenter Notes
+     *
+     * @param string $content Content in Page
+     *
+     * @return array Processed content
+     */
+    public static function processNotes(string $content)
+    {
+        preg_match_all(self::REGEX_NOTES, $content, $notes, PREG_SET_ORDER, 0);
+        $matches = array();
+        foreach ($notes as $note) {
+            $note = $note[0];
+            $matches[] = str_replace('^ ', '<p>', $note);
+        }
+        $content = '<aside class="notes">' . implode("", $matches) . '</aside>';
+        return $content;
     }
 
     /**

@@ -1,13 +1,19 @@
+# v1.2.3
+## 05-06-2019
+
+1. [](#new)
+   - Handle Notes
+
 # v1.2.2
 ## 03-06-2019
 
-1. [](#new)
+1. [](#improved)
    - GPM fix
 
 # v1.2.1
 ## 31-05-2019
 
-1. [](#new)
+1. [](#improved)
    - Properties placeholder to align with API
 
 # v1.2.0
