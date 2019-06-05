@@ -54,7 +54,7 @@ class DecksetParser extends Parser implements ParserInterface
     const REGEX_IMG_PERCENTAGE = '/^(?:\w*\s*)(?<percentage>\d*%$)/mU';
     const REGEX_VIDEO = '/(?:<video).*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/video>)/iUm';
     const REGEX_AUDIO = '/(?:<audio).*(?<controls>controls.*)\s*(?:alt="(?<alt>.*)").*(?:src="(?<src>.*)").*(?:<\/audio>)/i';
-    const REGEX_NOTES = '/\^.*/m';
+    const REGEX_NOTES = '/\^.*/im';
 
     /**
      * Parse shortcodes
@@ -380,6 +380,7 @@ class DecksetParser extends Parser implements ParserInterface
             $content = str_replace($note, '', $content);
             $matches[] = str_replace('^ ', '<p>', $note);
         }
+        $content = preg_replace('/^<p>\s.*$/im', '', $content);
         $notesHolder = '<aside class="notes">' . implode("", $matches) . '</aside>';
         return $content . $notesHolder;
     }
