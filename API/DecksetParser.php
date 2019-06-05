@@ -377,10 +377,11 @@ class DecksetParser extends Parser implements ParserInterface
         $matches = array();
         foreach ($notes as $note) {
             $note = $note[0];
+            $content = str_replace($note, '', $content);
             $matches[] = str_replace('^ ', '<p>', $note);
         }
-        $content = '<aside class="notes">' . implode("", $matches) . '</aside>';
-        return $content;
+        $notesHolder = '<aside class="notes">' . implode("", $matches) . '</aside>';
+        return $content . $notesHolder;
     }
 
     /**
