@@ -1,3 +1,9 @@
+# v1.3.1
+## 10-06-2019
+
+1. [](#bugfix)
+   - API-interface alignment
+
 # v1.3.0
 ## 10-06-2019
 

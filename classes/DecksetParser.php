@@ -40,6 +40,8 @@ class DecksetParser extends Parser implements ParserInterface
     {
         $this->config = $config;
         $this->transport = $transport;
+        // @deprecated 2.0.0
+        $this->props = [];
     }
 
     /**
@@ -64,9 +66,9 @@ class DecksetParser extends Parser implements ParserInterface
      *
      * @return array Processed content and shortcodes
      */
-    public function interpretShortcodes(string $content, string $id, array $page)
+    public function processShortcodes(string $content, string $id, array $page)
     {
-        $base = parent::interpretShortcodes($content, $id, $page);
+        $base = parent::processShortcodes($content, $id, $page);
         if (!empty($base['content'])) {
             $content = $base['content'];
         }
