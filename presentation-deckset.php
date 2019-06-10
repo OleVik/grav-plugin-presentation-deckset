@@ -51,6 +51,6 @@ class PresentationDecksetPlugin extends Plugin
      */
     public function onPluginsInitialized(Event $event)
     {
-        include_once __DIR__ . '/API/DecksetParser.php';
+        include_once __DIR__ . '/classes/DecksetParser.php';
     }
 }

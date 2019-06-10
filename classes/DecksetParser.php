@@ -40,7 +40,6 @@ class DecksetParser extends Parser implements ParserInterface
     {
         $this->config = $config;
         $this->transport = $transport;
-        $this->props = [];
     }
 
     /**
@@ -60,19 +59,16 @@ class DecksetParser extends Parser implements ParserInterface
      * Parse shortcodes
      *
      * @param string $content Content in Page
-     * @param string $id      Slide id-attribute
+     * @param string $id      Slide ID
+     * @param array  $page    Page instance
      *
-     * @return array Processed content and properties
+     * @return array Processed content and shortcodes
      */
-    public function interpretShortcodes(string $content, string $id)
+    public function interpretShortcodes(string $content, string $id, array $page)
     {
-        $return = array();
-        $base = parent::interpretShortcodes($content, $id);
+        $base = parent::interpretShortcodes($content, $id, $page);
         if (!empty($base['content'])) {
             $content = $base['content'];
-        }
-        if (is_array($base['props'])) {
-            $return = $base['props'];
         }
         if (preg_match(self::REGEX_NOTES, $content)) {
             $content = self::processNotes($content);
@@ -169,7 +165,7 @@ class DecksetParser extends Parser implements ParserInterface
                 }
             }
         }
-        return ['content' => $content, 'props' => $return];
+        return ['content' => $content, 'shortcodes' => $base['shortcodes']];
     }
 
     /**
