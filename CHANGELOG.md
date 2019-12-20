@@ -1,3 +1,9 @@
+# v1.3.2-beta.1
+## 20-12-2019
+
+1. [](#bugfix)
+   - Test whether parent exists
+
 # v1.3.1
 ## 10-06-2019
 
