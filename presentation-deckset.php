@@ -51,6 +51,11 @@ class PresentationDecksetPlugin extends Plugin
      */
     public function onPluginsInitialized(Event $event)
     {
-        include_once __DIR__ . '/classes/DecksetParser.php';
+        if (
+            $this->config->get('plugins.presentation.enabled') &&
+            $this->config->get('plugins.presentation-deckset.enabled')
+        ) {
+            include_once __DIR__ . '/classes/DecksetParser.php';
+        }
     }
 }
