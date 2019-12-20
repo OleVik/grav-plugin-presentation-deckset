@@ -1,3 +1,9 @@
+# v1.3.3
+## 20-12-2019
+
+1. [](#bugfix)
+   - Stable release of v1.3.2-beta.1
+
 # v1.3.2-beta.1
 ## 20-12-2019
 
